@@ -17,8 +17,8 @@ import xyppy.ops as ops
 import xyppy.term as term
 import xyppy.six.moves.urllib as urllib
 
-def main():
 
+def main():
     if len(sys.argv) < 2:
         # I prefer a non-auto-gen'd zero arg screen
         if sys.argv[0].endswith('__main__.py'):
@@ -65,6 +65,7 @@ def main():
                 env.screen.buffer.append(words)
     except KeyboardInterrupt:
         pass
+
 
 if __name__ == '__main__':
     main()
