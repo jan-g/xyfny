@@ -1,3 +1,4 @@
+from collections import deque
 import random
 import time
 
@@ -5,6 +6,11 @@ import xyppy.term as term
 from xyppy.debug import warn
 
 from xyppy.six.moves import range
+
+
+class NeedInput(Exception):
+    pass
+
 
 # warning: hack filled nonsense follows, since I'm
 # converting a system that expects full control over
@@ -54,6 +60,8 @@ class Screen(object):
         self.seenBuf = {line: True for line in self.textBuf}
         self.wrapBuf = []
         self.haveNotScrolled = True
+        self.buffer = deque()
+        self.eol = True
 
     def make_screen_buf(self):
         return [self.make_screen_line() for i in range(self.env.hdr.screen_height_units)]
@@ -75,6 +83,12 @@ class Screen(object):
             self.scroll()
 
     def write(self, text):
+        if self.eol and text == '>':
+            return
+        print(text, end='')
+        self.eol = text.endswith('\n')
+        return
+        """
         env = self.env
 
         # the spec suggests pushing the bottom window cursor down.
@@ -89,11 +103,13 @@ class Screen(object):
             self.write_wrapped(as_screenchars)
         else:
             self.write_unwrapped(as_screenchars)
+        """
 
     # for when it's useful to make a hole in the scroll text
     # e.g. moving already written text around to make room for
     # what's about to become a new split window
     def scroll_top_line_only(self):
+        return
         env = self.env
         old_line = self.textBuf[env.top_window_height]
 
@@ -115,6 +131,8 @@ class Screen(object):
         self.haveNotScrolled = False
 
     def scroll(self, count_lines=True):
+        print()
+        return
         env = self.env
 
         if not self.seenBuf[self.textBuf[env.top_window_height]]:
@@ -139,6 +157,7 @@ class Screen(object):
         self.seenBuf = {line: True for line in self.textBuf}
 
     def pause_scroll_for_user_input(self):
+        return
         # TODO: mark last paused line, set it up so such lines get
         # marked with a plus when still in the buffer, to help your
         # eye track the scroll.
@@ -155,6 +174,8 @@ class Screen(object):
         self.update_seen_lines()
 
     def overwrite_line_with(self, new_line):
+        print(new_line)
+        return
         term.clear_line()
         for c in new_line:
             write_char(c.char, c.fg_color, c.bg_color, c.text_style)
@@ -162,12 +183,15 @@ class Screen(object):
 
     # TODO: fun but slow, make a config option
     def slow_scroll_effect(self):
+        return
         if not self.env.options.no_slow_scroll:
             if not term.is_windows: # windows is slow enough, atm :/
                 self.flush()
                 time.sleep(0.002)
 
     def new_line(self):
+        print()
+        return
         env, win = self.env, self.env.current_window
         row, col = env.cursor[win]
         if win == 0:
@@ -184,10 +208,14 @@ class Screen(object):
                 env.cursor[win] = row, col-1 # as suggested by spec
 
     def write_wrapped(self, text_as_screenchars):
+        print(text_as_screenchars, end="")
+        return
         self.wrapBuf += text_as_screenchars
 
     # for bg_color propagation (only happens when a newline comes in via wrapping, it seems)
     def new_line_via_spaces(self, fg_color, bg_color, text_style):
+        print()
+        return
         env, win = self.env, self.env.current_window
         row, col = env.cursor[win]
         self.write_unwrapped([ScreenChar(' ', fg_color, bg_color, text_style)])
@@ -195,6 +223,7 @@ class Screen(object):
             self.write_unwrapped([ScreenChar(' ', fg_color, bg_color, text_style)])
 
     def finish_wrapping(self):
+        return
         env = self.env
         win = env.current_window
         text = self.wrapBuf
@@ -236,6 +265,8 @@ class Screen(object):
                 text = collapse_on_newline(text)
 
     def write_unwrapped(self, text_as_screenchars):
+        print(text_as_screenchars, end="")
+        return
         env = self.env
         win = env.current_window
         w = env.hdr.screen_width_units
@@ -251,6 +282,7 @@ class Screen(object):
                     self.new_line()
 
     def flush(self):
+        return
         self.finish_wrapping()
         term.home_cursor()
         buf = self.textBuf
@@ -265,6 +297,10 @@ class Screen(object):
         term.flush()
 
     def get_line_of_input(self, prompt='', prefilled=''):
+        if len(self.buffer) == 0:
+            raise NeedInput()
+        return self.buffer.popleft()
+
         env = self.env
 
         for c in prompt:
@@ -401,6 +437,7 @@ class Screen(object):
         return ''.join(cursor_line.chars)
 
     def first_draw(self):
+        return
         env = self.env
         for i in range(env.hdr.screen_height_units-1):
             write_char('\n', env.fg_color, env.bg_color, env.text_style)
@@ -408,6 +445,9 @@ class Screen(object):
         term.home_cursor()
 
     def getch_or_esc_seq(self):
+        if len(self.buffer) == 0:
+            raise NeedInput()
+        return self.buffer.popleft()
         self.flush()
         c = term.getch_or_esc_seq()
         self.update_seen_lines()
@@ -420,6 +460,8 @@ class Screen(object):
     # for save game error messages and such
     # TODO: better formatting here (?)
     def msg(self, text):
+        print(text)
+        return
         self.write(text)
         self.flush()
         term.getch_or_esc_seq()

@@ -3,6 +3,8 @@ from __future__ import print_function
 import argparse
 import sys
 
+from xyppy.vterm import NeedInput
+
 try:
     from xyppy.debug import err
 except ImportError:
@@ -55,7 +57,12 @@ def main():
     ops.setup_opcodes(env)
     try:
         while True:
-            step(env)
+            try:
+                step(env)
+            except NeedInput:
+                words = input("> ")
+                print()
+                env.screen.buffer.append(words)
     except KeyboardInterrupt:
         pass
 

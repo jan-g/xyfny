@@ -224,40 +224,44 @@ class Env:
 def step(env):
 
     pc, icache = env.pc, env.icache
-    if pc in icache:
-        op, opinfo, env.pc = icache[pc]
-    else:
-        op, opinfo, env.pc = ops_decode.decode(env, pc)
-        if pc >= env.hdr.static_mem_base:
-            icache[pc] = op, opinfo, env.pc
+    try:
+        if pc in icache:
+            op, opinfo, env.pc = icache[pc]
+        else:
+            op, opinfo, env.pc = ops_decode.decode(env, pc)
+            if pc >= env.hdr.static_mem_base:
+                icache[pc] = op, opinfo, env.pc
 
-    # fixup dynamic operands
-    if opinfo.has_dynamic_operands:
-        for i, var_num in opinfo.var_op_info:
-            opinfo.operands[i] = ops.get_var(env, var_num)
+        # fixup dynamic operands
+        if opinfo.has_dynamic_operands:
+            for i, var_num in opinfo.var_op_info:
+                opinfo.operands[i] = ops.get_var(env, var_num)
 
-    # for Quetzal
-    if opinfo.last_pc_branch_var:
-        env.last_pc_branch_var = opinfo.last_pc_branch_var
-    if opinfo.last_pc_store_var:
-        env.last_pc_store_var = opinfo.last_pc_store_var
+        # for Quetzal
+        if opinfo.last_pc_branch_var:
+            env.last_pc_branch_var = opinfo.last_pc_branch_var
+        if opinfo.last_pc_store_var:
+            env.last_pc_store_var = opinfo.last_pc_store_var
 
-    if DBG:
-        warn(hex(pc))
-        warn('op:', op.__name__)
-        warn('    operands', dbg_decode_operands(env, op.__name__, opinfo.operands))
-        if opinfo.branch_offset != None:
-            warn('    branch_offset', opinfo.branch_offset)
-            warn('    branch_to', dbg_decode_branch(env, opinfo.branch_offset))
-            warn('    branch_on', opinfo.branch_on)
+        if DBG:
+            warn(hex(pc))
+            warn('op:', op.__name__)
+            warn('    operands', dbg_decode_operands(env, op.__name__, opinfo.operands))
+            if opinfo.branch_offset != None:
+                warn('    branch_offset', opinfo.branch_offset)
+                warn('    branch_to', dbg_decode_branch(env, opinfo.branch_offset))
+                warn('    branch_on', opinfo.branch_on)
 
-        op(env, opinfo)
+            op(env, opinfo)
 
-        if opinfo.store_var:
-            warn(    'store_var', ops.get_var_name(opinfo.store_var))
-            warn(    'stored_result', dbg_decode_result(env, op.__name__, opinfo.store_var))
-    else:
-        op(env, opinfo)
+            if opinfo.store_var:
+                warn(    'store_var', ops.get_var_name(opinfo.store_var))
+                warn(    'stored_result', dbg_decode_result(env, op.__name__, opinfo.store_var))
+        else:
+            op(env, opinfo)
+    except vterm.NeedInput:
+        env.pc = pc
+        raise
 
 def dbg_decode_branch(env, offset):
     if offset == 0 or offset == 1:
