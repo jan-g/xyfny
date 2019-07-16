@@ -28,11 +28,11 @@ def run(file):
     env = make_env(file)
     line = None
     while True:
-        print(make_step(env, line))
+        print(do_step(env, line))
         line = input("> ")
 
 
-def make_step(env, next_line=None):
+def do_step(env, next_line=None):
     env.screen.output = []
     if next_line is not None:
         env.screen.buffer.append(next_line)
