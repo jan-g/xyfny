@@ -8,18 +8,20 @@ ext_dispatch = {}
 ext_has_store_var = {}
 ext_has_branch_var = {}
 
+
 def op(opcode, f, svar=False, bvar=False):
     dispatch[opcode] = f
     has_store_var[opcode] = svar
     has_branch_var[opcode] = bvar
+
 
 def ext(opcode, f, svar=False, bvar=False):
     ext_dispatch[opcode] = f
     ext_has_store_var[opcode] = svar
     ext_has_branch_var[opcode] = bvar
 
-def setup_opcodes(env):
 
+def setup_opcodes(env):
     op(1,   je,                         bvar=True)
     op(2,   jl,                         bvar=True)
     op(3,   jg,                         bvar=True)
@@ -304,3 +306,10 @@ def setup_opcodes(env):
     ext(12, check_unicode, svar=True)
     # ext(13, set_true_colour)
 
+
+class _env:
+    class hdr:
+        version = 3
+
+
+setup_opcodes(_env)
