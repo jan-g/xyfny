@@ -7,12 +7,13 @@ def read_file(fn):
         return f.read()
 setup(
     name="xyfny",
-    version="0.0.1",
+    version="0.0.2",
     description="Reworking of xyppy",
     long_description=read_file("README.md"),
-    author="jang",
-    author_email="faastm@ioctl.org",
-    license=read_file("LICENSE"),
+    long_description_content_type="text/markdown",
+    author="theinternetftw, jang",
+    author_email="xyfny@ioctl.org",
+    license="MIT License",
     packages=find_packages(),
 
     entry_points={
@@ -29,6 +30,17 @@ setup(
         "pytest",
         "flake8",
         "wheel",
+    ],
+
+    classifiers=[
+        "Development Status :: 4 - Beta",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Topic :: Games/Entertainment :: Puzzle Games",
     ],
 )
 
