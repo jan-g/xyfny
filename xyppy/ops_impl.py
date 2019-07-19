@@ -13,7 +13,7 @@ from xyppy.ops_impl_compat import *
 import xyppy.quetzal as quetzal
 
 import xyppy.six as six
-from xyppy.six.moves import range
+
 
 def get_var(env, var_num, pop_stack=True):
     # if DBG:
