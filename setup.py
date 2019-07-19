@@ -9,7 +9,7 @@ def read_file(fn):
 
 setup(
     name="xyfny",
-    version="0.0.1",
+    version="0.0.3",
     description="Reworking of xyppy",
     long_description=read_file("README.md"),
     long_description_content_type="text/markdown",
