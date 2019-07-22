@@ -1,13 +1,9 @@
-from __future__ import print_function
-
-import os
-import sys
+import io
 import struct
 
 from xyppy.iff import Chunk, FormChunk, packHdr
 
 import xyppy.six as six
-from xyppy.six.moves import range
 
 class IFhdChunk(Chunk):
     @classmethod
@@ -209,10 +205,11 @@ class StksChunk(Chunk):
         self.size = len(framebytes)
         return packHdr(self) + framebytes
 
-def read(filename):
-    if os.path.exists(filename + '.sav'):
+
+def read(env, filename):
+    if not filename.endswith('.sav'):
         filename += '.sav'
-    with open(filename, 'rb') as f:
+    with io.BytesIO(env.files.get(filename)) as f:
         formChunk = FormChunk.from_chunk(Chunk.from_data(f.read()))
         for chunk in formChunk.chunks:
             if chunk.name == b'IFhd':
@@ -225,25 +222,28 @@ def read(filename):
                 stksChunk = StksChunk.from_chunk(chunk)
     return formChunk.subname, hdChunk, memChunk, stksChunk.frames
 
+
 def write(env, filename):
     if not filename.endswith('.sav'):
         filename += '.sav'
     try:
-        with open(filename, 'wb') as f:
+        with io.BytesIO() as f:
             chunks = [IFhdChunk.from_env(env),
                       CMemChunk.from_env(env),
                       StksChunk.from_env(env)]
             formChunk = FormChunk.from_chunk_list(b'IFZS', chunks)
             f.write(formChunk.pack())
+            env.files[filename] = f.getvalue()
         return True
     except IOError as ioerr:
         env.screen.msg('error writing save file: '+str(ioerr)+'\n')
         return False
 
+
 def load_to_env(env, filename):
     msg = env.screen.msg
     try:
-        subname, hdrChunk, memChunk, frames = read(filename)
+        subname, hdrChunk, memChunk, frames = read(env, filename)
     except IOError as ioerr:
         msg('error reading file: '+str(ioerr)+'\n')
         return False

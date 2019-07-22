@@ -192,6 +192,8 @@ class Env:
         self.current_window = 0
         self.top_window_height = 0
 
+        self.files = {}
+
     def fixup_after_restore(self):
         # make sure our standard flags are set after load
         set_standard_flags(self)
@@ -221,8 +223,8 @@ class Env:
         self.screen.flush()
         sys.exit()
 
-def step(env):
 
+def step(env):
     pc, icache = env.pc, env.icache
     try:
         if pc in icache:
