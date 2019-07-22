@@ -2,6 +2,9 @@ from xyppy.debug import warn, err
 import xyppy.term as term
 
 
+DBG = False
+
+
 def get_cursor_loc_after_erase(env, cleared_window):
     if cleared_window == 0:
         if env.hdr.version >= 5:
