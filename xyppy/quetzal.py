@@ -207,9 +207,8 @@ class StksChunk(Chunk):
 
 
 def read(env, filename):
-    if not filename.endswith('.sav'):
-        filename += '.sav'
-    with io.BytesIO(env.files.get(filename)) as f:
+    filename = int(filename)
+    with io.BytesIO(env.files.get(filename, (None, None))[1]) as f:
         formChunk = FormChunk.from_chunk(Chunk.from_data(f.read()))
         for chunk in formChunk.chunks:
             if chunk.name == b'IFhd':
@@ -224,8 +223,7 @@ def read(env, filename):
 
 
 def write(env, filename):
-    if not filename.endswith('.sav'):
-        filename += '.sav'
+    env.next_file += 1
     try:
         with io.BytesIO() as f:
             chunks = [IFhdChunk.from_env(env),
@@ -233,7 +231,7 @@ def write(env, filename):
                       StksChunk.from_env(env)]
             formChunk = FormChunk.from_chunk_list(b'IFZS', chunks)
             f.write(formChunk.pack())
-            env.files[filename] = f.getvalue()
+            env.files[env.next_file] = (filename, f.getvalue())
         return True
     except IOError as ioerr:
         env.screen.msg('error writing save file: '+str(ioerr)+'\n')

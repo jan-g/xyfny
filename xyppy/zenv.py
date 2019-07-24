@@ -195,6 +195,9 @@ class Env:
         if not hasattr(self, "files"):
             self.files = {}
 
+        if not hasattr(self, "next_file"):
+            self.next_file = 0
+
     def fixup_after_restore(self):
         # make sure our standard flags are set after load
         set_standard_flags(self)

@@ -11,7 +11,6 @@ class Screen(object):
         self.buffer = deque()
         self.eol = True
         self.output = []
-        self.save_file = 'save'
 
     def blank_top_win(self):
         return
@@ -38,9 +37,8 @@ class Screen(object):
         return
 
     def get_line_of_input(self, prompt='', prefilled=''):
-        if prompt == 'input save filename: ':
-            return self.save_file
         if len(self.buffer) == 0:
+            self.write(prompt)
             raise NeedInput()
         return self.buffer.popleft()
 

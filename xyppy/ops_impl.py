@@ -1007,7 +1007,10 @@ def set_window(env, opinfo):
         err('set_window: requested unknown window:', env.current_window)
 
 def restore_z3(env, opinfo):
-    filename = env.screen.get_line_of_input('input save filename: ')
+    ls = ''
+    for k in sorted(env.files):
+        ls += str(k) + "\t" + env.files[k][0] + "\n"
+    filename = env.screen.get_line_of_input(ls + 'input save filename: ')
     loaded = quetzal.load_to_env(env, filename)
     if loaded:
         # move past save inst's branch byte(s)
