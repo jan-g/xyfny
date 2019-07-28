@@ -1,4 +1,5 @@
 from collections import deque
+import sys
 
 
 class NeedInput(Exception):
@@ -39,7 +40,7 @@ class Screen(object):
     def get_line_of_input(self, prompt='', prefilled=''):
         if len(self.buffer) == 0:
             self.write(prompt)
-            raise NeedInput()
+            raise NeedInput(prompt)
         return self.buffer.popleft()
 
     def first_draw(self):
@@ -47,7 +48,7 @@ class Screen(object):
 
     def getch_or_esc_seq(self):
         if len(self.buffer) == 0:
-            raise NeedInput()
+            raise NeedInput('GETCH')
         return self.buffer.popleft()
 
     # for save game error messages and such

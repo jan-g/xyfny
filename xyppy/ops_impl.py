@@ -771,7 +771,10 @@ def read_char(env, opinfo):
         if opinfo.operands[1] != 0 or opinfo.operands[2] != 0:
             if DBG:
                 warn('read_char: interrupts not impl\'d yet!')
-    c = ascii_to_zscii(env.screen.getch_or_esc_seq())[0]
+    c = env.screen.getch_or_esc_seq() or '\0'
+    if c.startswith('\\'):
+        c = chr(int(c[1:], 8))
+    c = ascii_to_zscii(c)[0]
     set_var(env, opinfo.store_var, c)
 
 def set_font(env, opinfo):
@@ -1058,27 +1061,31 @@ def save(env, opinfo):
 def set_cursor(env, opinfo):
     env.screen.finish_wrapping()
 
-    row = to_signed_word(opinfo.operands[0])
-    col = to_signed_word(opinfo.operands[1])
-    if row < 1: # why do we not error out here?
-        row = 1
-    if col < 1: # same question
-        col = 1
+    try:
+        row = to_signed_word(opinfo.operands[0])
+        col = to_signed_word(opinfo.operands[1])
+        if row < 1: # why do we not error out here?
+            row = 1
+        if col < 1: # same question
+            col = 1
 
-    # ignores win 0 (S 8.7.2.3)
-    if env.current_window == 1:
-        if col > env.hdr.screen_width_units:
-            if DBG:
-                warn('set_cursor: set outside screen width', col)
-            col = env.hdr.screen_width_units
-        if row > env.hdr.screen_height_units:
-            if DBG:
-                warn('set_cursor: set outside screen height', row)
-            row = env.hdr.screen_height_units
-        # see 3rd to last note at bottom of section 8
-        env.top_window_height = max(env.top_window_height, row-1)
-        # fix that row,col have a 1,1 origin
-        env.cursor[env.current_window] = row-1, col-1
+        # ignores win 0 (S 8.7.2.3)
+        if env.current_window == 1:
+            if col > env.hdr.screen_width_units:
+                if DBG:
+                    warn('set_cursor: set outside screen width', col)
+                col = env.hdr.screen_width_units
+            if row > env.hdr.screen_height_units:
+                if DBG:
+                    warn('set_cursor: set outside screen height', row)
+                row = env.hdr.screen_height_units
+            # see 3rd to last note at bottom of section 8
+            env.top_window_height = max(env.top_window_height, row-1)
+            # fix that row,col have a 1,1 origin
+            env.cursor[env.current_window] = row-1, col-1
+    except Exception as e:
+        warn("Exception during set_cursor:", e, repr(opinfo))
+
 
 def set_colour(env, opinfo):
     fg_col = opinfo.operands[0]

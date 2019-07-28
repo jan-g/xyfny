@@ -38,8 +38,11 @@ def do_step(env, next_line=None):
     try:
         while True:
             step(env)
-    except NeedInput:
+    except NeedInput as e:
+        print(e)
         pass
-    result = ''.join(env.screen.output)
+    result = ''.join(env.screen.output).splitlines()
+    #while len(result) > 0 and result[-1].startswith(">"):
+    #    result = result[:-1]
     env.screen.output = []
-    return result
+    return '\n'.join(result)
