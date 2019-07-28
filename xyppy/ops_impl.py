@@ -1028,6 +1028,11 @@ def restore(env, opinfo):
         set_var(env, opinfo.store_var, 0)
         return
 
+    ls = ''
+    for k in sorted(env.files):
+        ls += str(k) + "\t" + env.files[k][0] + "\n"
+    filename = env.screen.get_line_of_input(ls + 'input save filename: ')
+
     filename = env.screen.get_line_of_input('input save filename: ')
     loaded = quetzal.load_to_env(env, filename)
     if loaded:
