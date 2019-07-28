@@ -1,27 +1,31 @@
 from xyppy.ops_impl import *
 
-dispatch = {}
-has_store_var = {}
-has_branch_var = {}
+all_dispatch = {}
+all_has_store_var = {}
+all_has_branch_var = {}
 
-ext_dispatch = {}
-ext_has_store_var = {}
-ext_has_branch_var = {}
-
-
-def op(opcode, f, svar=False, bvar=False):
-    dispatch[opcode] = f
-    has_store_var[opcode] = svar
-    has_branch_var[opcode] = bvar
+all_ext_dispatch = {}
+all_ext_has_store_var = {}
+all_ext_has_branch_var = {}
 
 
-def ext(opcode, f, svar=False, bvar=False):
-    ext_dispatch[opcode] = f
-    ext_has_store_var[opcode] = svar
-    ext_has_branch_var[opcode] = bvar
+def make_op(dispatch, has_store_var, has_branch_var):
+    def op(opcode, f, svar=False, bvar=False):
+        dispatch[opcode] = f
+        has_store_var[opcode] = svar
+        has_branch_var[opcode] = bvar
+    return op
 
 
-def setup_opcodes(env):
+def make_ext(ext_dispatch, ext_has_store_var, ext_has_branch_var):
+    def ext(opcode, f, svar=False, bvar=False):
+        ext_dispatch[opcode] = f
+        ext_has_store_var[opcode] = svar
+        ext_has_branch_var[opcode] = bvar
+    return ext
+
+
+def setup_opcodes(env, op, ext):
     op(1,   je,                         bvar=True)
     op(2,   jl,                         bvar=True)
     op(3,   jg,                         bvar=True)
@@ -307,9 +311,19 @@ def setup_opcodes(env):
     # ext(13, set_true_colour)
 
 
-class _env:
-    class hdr:
-        version = 3
+for version in 3, 4, 5, 8:
+    all_dispatch[version] = {}
+    all_has_store_var[version] = {}
+    all_has_branch_var[version] = {}
 
+    all_ext_dispatch[version] = {}
+    all_ext_has_store_var[version] = {}
+    all_ext_has_branch_var[version] = {}
 
-setup_opcodes(_env)
+    class _env:
+        class hdr:
+            version = version
+
+    setup_opcodes(_env,
+                  make_op(all_dispatch[version], all_has_store_var[version], all_has_branch_var[version]),
+                  make_ext(all_ext_dispatch[version], all_ext_has_store_var[version], all_ext_has_branch_var[version]))

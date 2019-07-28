@@ -20,7 +20,6 @@ def make_env(file):
     if env.hdr.version not in [1,2,3,4,5,7,8]:
         err('unsupported z-machine version: '+str(env.hdr.version))
 
-    ops.setup_opcodes(env)
     return env
 
 

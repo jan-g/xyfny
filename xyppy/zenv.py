@@ -11,7 +11,7 @@ from xyppy.zmath import to_signed_word
 from xyppy.debug import DBG, warn, err
 
 import xyppy.six as six
-from xyppy.six.moves import range
+
 
 def b16_setter(base):
     def setter(self, val):

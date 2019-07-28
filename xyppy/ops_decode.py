@@ -2,7 +2,6 @@ from xyppy.debug import DBG, warn, err
 from xyppy.zmath import to_signed_word
 import xyppy.ops as ops
 
-from xyppy.six.moves import range
 
 class VarForm:
     pass
@@ -83,6 +82,7 @@ class OpInfo:
         self.has_dynamic_operands = len(var_op_info) > 0
 
 def decode(env, pc):
+    version = env.hdr.version
 
     opcode = env.mem[pc]
     form = get_opcode_form(env, opcode)
@@ -139,13 +139,13 @@ def decode(env, pc):
             err('unknown operand size specified: ' + str(size))
 
     if form == ExtForm:
-        dispatch = ops.ext_dispatch
-        has_store_var = ops.ext_has_store_var
-        has_branch_var = ops.ext_has_branch_var
+        dispatch = ops.all_ext_dispatch[version]
+        has_store_var = ops.all_ext_has_store_var[version]
+        has_branch_var = ops.all_ext_has_branch_var[version]
     else:
-        dispatch = ops.dispatch
-        has_store_var = ops.has_store_var
-        has_branch_var = ops.has_branch_var
+        dispatch = ops.all_dispatch[version]
+        has_store_var = ops.all_has_store_var[version]
+        has_branch_var = ops.all_has_branch_var[version]
 
     opinfo = OpInfo(operands, var_op_info)
 
